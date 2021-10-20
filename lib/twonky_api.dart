@@ -58,8 +58,9 @@ class Twonky {
         // print(response.body);
         result = jsonDecode(response.body);
         if (result['success'] != null && result['success'] == 'false')
-          throw Exception(['Request failed', response]);
-      } catch (e) {
+          throw Exception("Request failed: $response Result: $result URI=${uri.toString()}");
+
+    } catch (e) {
         result = response.body;
       }
       return result;
