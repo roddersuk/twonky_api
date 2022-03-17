@@ -7,7 +7,10 @@ enum TransferOperation { start, stop, getstatus }
 
 extension TransferOperationStr on TransferOperation {
   String get str {
-    return this.toString().split('.').last;
+    return this
+        .toString()
+        .split('.')
+        .last;
   }
 }
 
@@ -15,7 +18,10 @@ enum DtcpDownloadOperation { enabled, start, stop, finish, getstatus }
 
 extension DtcpDownloadOperationStr on DtcpDownloadOperation {
   String get str {
-    return this.toString().split('.').last;
+    return this
+        .toString()
+        .split('.')
+        .last;
   }
 }
 
@@ -27,7 +33,13 @@ class Twonky {
 
   Twonky({required this.hostname, required this.port});
 
+  void setServer({required hostname, required port}) {
+    this.hostname = hostname;
+    this.port = port;
+  }
+
   get server => _server;
+
   get initialised => _initialised;
 
   // ******************************************************
@@ -50,17 +62,20 @@ class Twonky {
       pathSegments: ['nmc', api, function],
       queryParameters: queryParameters,
     );
-    // print('URI=${uri.toString()}');
-    http.Response response = await http.get(uri);
+    print('URI=${uri.toString()}');
+    // try {
+      http.Response response = await http.get(uri);
+    // } catch (e) {
+    // }
     if (response.statusCode == 200) {
       var result;
       try {
-        // print(response.body);
+        print(response.body);
         result = jsonDecode(response.body);
         if (result['success'] != null && result['success'] == 'false')
-          throw Exception("Request failed: $response Result: $result URI=${uri.toString()}");
-
-    } catch (e) {
+          throw Exception("Request failed: $response Result: $result URI=${uri
+              .toString()}");
+      } catch (e) {
         result = response.body;
       }
       return result;
@@ -82,24 +97,28 @@ class Twonky {
   // ******************************************************
 
   Future<dynamic> getServer() async {
+    _initialised = false;
     await getServers().then((servers) {
       for (var item in servers['item']) {
         var server = item['server'];
-        if (server['name'] == 'Twonky') {
+        if (server['modelName'] == 'TwonkyServer') {
           _initialised = true;
           _server = server;
+          break;
         }
       }
     });
   }
 
-  Future<dynamic> getServers() => _call(
+  Future<dynamic> getServers() =>
+      _call(
         function: 'servers',
         parameters: {'fmt': 'json'},
         api: 'rss',
       );
 
-  Future<dynamic> getRenderers() => _call(
+  Future<dynamic> getRenderers() =>
+      _call(
         function: 'renderers',
         parameters: {'fmt': 'json'},
         api: 'rss',
@@ -138,9 +157,9 @@ class Twonky {
     String? addlHdrs,
   }) {
     assert(
-        (metadata != null && title == null) ||
-            (title != null && metadata == null),
-        'addMetadata: either metadata or title must be specified');
+    (metadata != null && title == null) ||
+        (title != null && metadata == null),
+    'addMetadata: either metadata or title must be specified');
     return _call(
       function: 'add_metadata',
       parameters: {
@@ -334,7 +353,7 @@ class Twonky {
     bool device = false,
   }) {
     assert(server != null || renderer != null,
-        '_getIconUrl: server or renderer must be specified');
+    '_getIconUrl: server or renderer must be specified');
     String type = (server != null) ? 'server' : 'renderer';
     String name = (server != null) ? server : renderer!;
     return _call(function: 'get_albumart', parameters: {
@@ -397,7 +416,7 @@ class Twonky {
       _call(function: 'get_playindex', parameters: {
         'renderer': renderer,
         'getIsPlayIndexValid':
-            (getIsPlayIndexValid != null && getIsPlayIndexValid) ? '1' : null,
+        (getIsPlayIndexValid != null && getIsPlayIndexValid) ? '1' : null,
       });
 
   Future<dynamic> getPlaymode({
@@ -445,18 +464,18 @@ class Twonky {
     bool? searchCaps,
   }) {
     assert(
-        (server != null && renderer == null) ||
-            (server == null && renderer != null),
-        'getSupportedMimetypes: server or renderer must be specified');
+    (server != null && renderer == null) ||
+        (server == null && renderer != null),
+    'getSupportedMimetypes: server or renderer must be specified');
     assert(sortCaps == null || searchCaps == null,
-        'getSupportedMimetypes: only one of sortCaps or searchCaps can be specified');
+    'getSupportedMimetypes: only one of sortCaps or searchCaps can be specified');
     return _call(function: 'get_supported_mimetypes', parameters: {
       'server': server,
       'renderer': renderer,
       'fmt': (json != null && json) ? 'json' : null,
       'sortcaps': (server != null && sortCaps != null && sortCaps) ? '1' : null,
       'searchcaps':
-          (server != null && searchCaps != null && searchCaps) ? '1' : null,
+      (server != null && searchCaps != null && searchCaps) ? '1' : null,
     });
   }
 
@@ -551,9 +570,9 @@ class Twonky {
     String? renderer,
   }) {
     assert(
-        (server != null && renderer == null) ||
-            (renderer != null && server == null),
-        'resetAudiobookPosition: only one of server or renderer may be specified');
+    (server != null && renderer == null) ||
+        (renderer != null && server == null),
+    'resetAudiobookPosition: only one of server or renderer may be specified');
     return _call(function: 'reset_audiobook_position', parameters: {
       'renderer': renderer,
       'server': server,
@@ -575,9 +594,12 @@ class Twonky {
     StringBuffer query = StringBuffer('type=$type');
     if (artist != null && artist != "")
       query.write('&artist=${Uri.encodeQueryComponent(artist)}');
-    if (album != null && album != "") query.write('&album=${Uri.encodeQueryComponent(album)}');
-    if (track != null && track != "") query.write('&title=${Uri.encodeQueryComponent(track)}');
-    if (genre != null && genre != "") query.write('&genre=${Uri.encodeQueryComponent(genre)}');
+    if (album != null && album != "") query.write(
+        '&album=${Uri.encodeQueryComponent(album)}');
+    if (track != null && track != "") query.write(
+        '&title=${Uri.encodeQueryComponent(track)}');
+    if (genre != null && genre != "") query.write(
+        '&genre=${Uri.encodeQueryComponent(genre)}');
     if (year != null && year != 0) query.write('&date=$year');
     return query.toString();
   }
@@ -950,7 +972,7 @@ class Twonky {
     required bool persist,
   }) {
     assert((device != null && key == null) || (key != null && device == null),
-        'persistDevice: one of device or key must be specified');
+    'persistDevice: one of device or key must be specified');
     return _call(function: 'persist_device', parameters: {
       'device': device,
     });
